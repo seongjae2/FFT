@@ -15,7 +15,7 @@ line, = ax.plot([], [], c='k', lw=1)
 
 NOTE_MIN = 50  # D3
 NOTE_MAX = 84  # C6
-limit_a = 1700
+limit_a = 1000
 
 NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
 
@@ -48,17 +48,17 @@ def init():
 def animate(i):
     data = np.fromstring(stream.read(CHUNK), dtype=np.int16)
     n = len(data)
-    x = np.linspace(0, 44100/2, n/2)    # 균일한 배열 생성 (start, end, num-points)
+    x = np.linspace(0, 44100, n/2)    # 균일한 배열 생성 (start, end, num-points)
     y = np.fft.fft(data) / n
     y = y[range(int(n/2))]
     y = np.absolute(y)
-    max_f = np.argmax(y)*(44100/n)   # 원하는 진동수 범위 중 최대값을 가지는 진동수
+    max_f = (float)(np.argmax(y))*(44100/n)*2   # note min max 적용해야함. 원하는 진동수 범위 중 최대값을 가지는 진동수
     max_a = np.max(y)
     if max_a > limit_a:
         note = freq_to_number(max_f)
-        note0 = int(round(69 + 12 * np.log2(max_f / 440.0)))
+        note0 = int(round(note))
         print('freq: {:6.1f} Hz  \ta: {:5.2f}   \tnote: {:>3s} {}    \tgap: {:+1.3f}'.format(
-            max_f, max_a, note_name(note0), note0 , (note - note0)))
+            max_f, max_a, note_name(note0), note0, (note - note0)))
     line.set_data(x, y)
     return line,
 
