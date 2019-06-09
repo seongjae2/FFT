@@ -13,11 +13,19 @@ ax.set_ylabel('Amplitude')
 
 line, = ax.plot([], [], c='k', lw=1)
 
-NOTE_MIN = 50  # D3
+NOTE_MIN = 40  # 50 : D3
 NOTE_MAX = 84  # C6
-limit_a = 1000
+limit_a = 300
+N_CHUNK = int(input("(16일 때 오차범위 +- 1.4hz) N_CHUNK? "))    # 16일 때 오차범위 +- 1.4hz
 
-NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
+# saving notes
+
+#save_note = bool(input("Do you want to save NOTES? (1 or 0) : "))
+#if(save_note):
+#    f = open("NOTE.txt",'a')
+
+
+NOTE_NAMES = '도C 도#C# 레D 레#D# 미E 파F 파#F# 솔G 솔#G# 라A 라#A# 시B'.split()
 
 # note <-> frequency
 
@@ -32,11 +40,10 @@ def number_to_freq(n):
 def note_name(n):
     return NOTE_NAMES[n % 12]
 
-fmin = round(number_to_freq(NOTE_MIN))
-fmax = round(number_to_freq(NOTE_MAX))
+F_MIN = number_to_freq(NOTE_MIN)
 
 print(NOTE_NAMES)
-print()
+print("NOTE_MIN :", NOTE_MIN , "\tMinimum Frequency :", F_MIN)
 
 #matplot lib 각 프레임에 적용될 배경 초기화 작업
 
@@ -55,15 +62,19 @@ def animate(i):
     max_f = (float)(np.argmax(y))*(44100/n)*2   # note min max 적용해야함. 원하는 진동수 범위 중 최대값을 가지는 진동수
     max_a = np.max(y)
     if max_a > limit_a:
-        note = freq_to_number(max_f)
-        note0 = int(round(note))
-        print('freq: {:6.1f} Hz  \ta: {:5.2f}   \tnote: {:>3s} {}    \tgap: {:+1.3f}'.format(
-            max_f, max_a, note_name(note0), note0, (note - note0)))
+        if max_f > F_MIN:
+            note = freq_to_number(max_f)
+            note0 = int(round(note))
+            print('freq: {:6.1f} Hz  \ta: {:5.2f}   \tnote: {:>3s} {}    \tgap: {:+1.3f}'.format(
+                max_f, max_a, note_name(note0), note0, (note - note0)))
+
     line.set_data(x, y)
     return line,
 
 
-CHUNK = 2048    # (randomly chosen)number of frames that the signals are split into
+CHUNK = 1024*N_CHUNK    # (randomly chosen)number of frames that the signals are split into
+                    # 오차범위 : 1024*16 -> +-1.3hz
+
 FORMAT = pyaudio.paInt16
 CHANNELS = 2    # Each frame will have 2 samples, 2 bytes
 RATE = 44100    # the number of frames per second
