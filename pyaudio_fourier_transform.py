@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
 
+
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 ax.set_xlim((0, 3000))  # x축
@@ -18,11 +19,15 @@ NOTE_MAX = 84  # C6
 limit_a = 300
 N_CHUNK = int(input("(16일 때 오차범위 +- 1.4hz) N_CHUNK? "))    # 16일 때 오차범위 +- 1.4hz
 
-# saving notes
 
-#save_note = bool(input("Do you want to save NOTES? (1 or 0) : "))
-#if(save_note):
-#    f = open("NOTE.txt",'a')
+save_note = bool(input("Do you want to save NOTES? (1 or 0) : "))
+if(save_note):
+    f = open("NOTE.txt",'w')
+
+# saving notes
+def notetxt(x):
+    data = note_name(x)
+    f.write(data+"\n")
 
 
 NOTE_NAMES = '도C 도#C# 레D 레#D# 미E 파F 파#F# 솔G 솔#G# 라A 라#A# 시B'.split()
@@ -47,12 +52,15 @@ print("NOTE_MIN :", NOTE_MIN , "\tMinimum Frequency :", F_MIN)
 
 #matplot lib 각 프레임에 적용될 배경 초기화 작업
 
+p_note = 0  # note 저장을 위한 이전 노트
+
 def init():
     line.set_data([], [])
     return line,
 
 
 def animate(i):
+
     data = np.fromstring(stream.read(CHUNK), dtype=np.int16)
     n = len(data)
     x = np.linspace(0, 44100, n/2)    # 균일한 배열 생성 (start, end, num-points)
@@ -61,19 +69,23 @@ def animate(i):
     y = np.absolute(y)
     max_f = (float)(np.argmax(y))*(44100/n)*2   # note min max 적용해야함. 원하는 진동수 범위 중 최대값을 가지는 진동수
     max_a = np.max(y)
-    if max_a > limit_a:
-        if max_f > F_MIN:
-            note = freq_to_number(max_f)
-            note0 = int(round(note))
-            print('freq: {:6.1f} Hz  \ta: {:5.2f}   \tnote: {:>3s} {}    \tgap: {:+1.3f}'.format(
-                max_f, max_a, note_name(note0), note0, (note - note0)))
+    if max_a > limit_a and max_f > F_MIN:
+        note = freq_to_number(max_f)
+        note0 = int(round(note))
+        print('freq: {:6.1f} Hz  \ta: {:5.2f}   \tnote: {:>3s} {}    \tgap: {:+1.3f}'.format(
+            max_f, max_a, note_name(note0), note0, (note - note0)))
+        if (save_note):
+            global p_note
+            if p_note != note0 :
+                notetxt(note0)
+                p_note = note0
 
     line.set_data(x, y)
     return line,
 
 
 CHUNK = 1024*N_CHUNK    # (randomly chosen)number of frames that the signals are split into
-                    # 오차범위 : 1024*16 -> +-1.3hz
+                        # 오차범위 : 1024*16 -> +-1.3hz
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 2    # Each frame will have 2 samples, 2 bytes
