@@ -16,7 +16,7 @@ line, = ax.plot([], [], c='k', lw=1)
 
 NOTE_MIN = 40  # 50 : D3
 NOTE_MAX = 84  # C6
-limit_a = 300
+limit_a = int(input("limit of Amplitude? "))
 N_CHUNK = int(input("(16일 때 오차범위 +- 1.4hz) N_CHUNK? "))    # 16일 때 오차범위 +- 1.4hz
 
 
